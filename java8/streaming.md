@@ -1,32 +1,35 @@
-# Streaming API Using
-## Iterate collection items before Java 8
-Example: Word count
+# Streaming API Introduction
 
-*Java 7 style*
+## Using Stream API
+*Old Style*
 ```java
-String[] kpiNames = trackable.getKpis();
-for (String kpiName : kpiNames) {
-    double kpiValue = trackable.getAndResetKpiValue(kpiName);
-    buffer.append(kpiName).append(" = ").append(kpiValue).append(", ");
+String[] strs = new String[] { "a", null, "b", "c", null, "d" };
+int numNonNull = 0;
+for (String str : strs) {
+    if (str != null) {
+        numNonNull += 1;
+    }
 }
-logger.info(buffer.toString());
+System.out.println("The number of non-null string is: " + numNonNull);
 ```
-
-*Java 8 style*
+*Using Java 8 Streaming API*
 ```java
-Stream.of(trackable.getKpis()).
-    forEach(kpiName -> {
-        double kpiValue = trackable.getAndResetKpiValue(kpiName);
-        buffer.append(kpiName).append(" = ").append(kpiValue).append(", ");
-    });
-logger.info(buffer.toString());
+String[] strs = new String[] { "a", null, "b", "c", null, "d" };
+long numNonNull = Stream.of(strs).filter(str -> str != null).count();
+System.out.println("The number of non-null string is: " + numNonNull);
 ```
+## Parse Stream
+* Create Stream
+* Convert Stream
+* Reduce Stream
 
 ## Benefits from Streaming API
-* d
+* Easy to use
+* High performance
+* 语法上更接近于动态语言，从命令风格
 
-## Create a Stream
-### Using Stream.of
+## Create Stream
+### Using Stream Interface
 ```java
 Stream<String> stream = Stream.of("a", "b", "c");
 ```
@@ -77,3 +80,24 @@ A reduction operation (also called a fold) takes a sequence of input elements an
 ## 可变汇聚
 
 Reference: http://ifeve.com/stream/
+
+
+*Java 7 style*
+```java
+String[] kpiNames = trackable.getKpis();
+for (String kpiName : kpiNames) {
+    double kpiValue = trackable.getAndResetKpiValue(kpiName);
+    buffer.append(kpiName).append(" = ").append(kpiValue).append(", ");
+}
+logger.info(buffer.toString());
+```
+
+*Java 8 style*
+```java
+Stream.of(trackable.getKpis()).
+    forEach(kpiName -> {
+        double kpiValue = trackable.getAndResetKpiValue(kpiName);
+        buffer.append(kpiName).append(" = ").append(kpiValue).append(", ");
+    });
+logger.info(buffer.toString());
+```
