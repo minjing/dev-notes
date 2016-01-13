@@ -113,14 +113,80 @@ list.stream()
     .forEach(System.out::println);
 ```
 
-1. limit: 对一个Stream进行截断操作，获取其前N个元素，如果原Stream中包含的元素个数小于N，那就获取其所有的元素
+1. limit: 
+Returns a stream consisting of the elements of this stream, truncated to be no longer than maxSize in length.
 ![Alt Stream Limit](stream_limit.jpg)
 
-1. skip: 返回一个丢弃原Stream的前N个元素后剩下元素组成的新Stream，如果原Stream中包含的元素个数小于N，那么返回空Stream
+1. skip:
+Returns a stream consisting of the remaining elements of this stream after discarding the first n elements of the stream. If this stream contains fewer than n elements then an empty stream will be returned.
 ![Alt Stream Skip](stream_skip.jpg)
 
 ## Terminal operation
 A reduction operation (also called a fold) takes a sequence of input elements and combines them into a single summary result by repeated application of a combining operation, such as finding the sum or maximum of a set of numbers, or accumulating elements into a list. The streams classes have multiple forms of general reduction operations, called reduce() and collect(), as well as multiple specialized reduction forms such as sum(), max(), or count().
+
+### Mutable Reducation
+
+A mutable reduction operation accumulates input elements into a mutable result container, such as a Collection or StringBuilder, as it processes the elements in the stream.
+
+Example: String concat
+```java
+Stream<String> strings = Stream.of("a", "b", "c", "d");
+System.out.println(strings.reduce("", String::concat));
+```
+We would get the desired result, and it would even work in parallel. However, we might not be happy about the performance! Such an implementation would do a great deal of string copying, and the run time would be O(n^2) in the number of characters. A more performant approach would be to accumulate the results into a StringBuilder, which is a mutable container for accumulating strings. We can use the same technique to parallelize mutable reduction as we do with ordinary reduction.
+
+1. collect
+Interface Definition
+```java
+<R> R collect(Supplier<R> supplier,
+              BiConsumer<R,? super T> accumulator,
+              BiConsumer<R,R> combiner)
+```
+Performs a mutable reduction operation on the elements of this stream. A mutable reduction is one in which the reduced value is a mutable result container, such as an ArrayList, and elements are incorporated by updating the state of the result rather than by replacing the result.
+Note: The combiner is only used in parallel Streams (to combine the partial outputs of the parallel computations)
+```java
+List<Integer> strs = Arrays.asList(1, null, 3, 5, null, 8);
+List<Integer> rtn = strs.parallelStream()
+    .filter(num -> num != null)
+    .collect(
+        () -> new ArrayList<Integer>(),
+        (list, item) -> list.add(item),
+        (list1, list2) -> list1.addAll(list2));
+System.out.println(rtn);
+```
+Using Method Reference:
+```java
+List<Integer> rtn2 = strs.parallelStream()
+    .filter(num -> num != null)
+    .collect(
+        ArrayList::new, 
+        ArrayList::add, 
+        ArrayList::addAll);
+System.out.println(rtn2);
+```
+Using Collector:
+```java
+List<Integer> rtn3 = strs.parallelStream()
+    .filter(num -> num != null)
+    .collect(Collectors.toList());
+System.out.println(rtn3);
+```
+
+### Other Reducation
+
+1. reduce
+
+1. count
+
+1. allMatch
+
+1. anyMatch
+
+1. findFirst
+
+1. noneMatch
+
+1. max and min
 
 ## Parallel Streams
 
@@ -135,7 +201,7 @@ This value can be decreased or increased by setting the following JVM parameter:
 ```
 
 
-## 可变汇聚
+
 
 Reference: http://ifeve.com/stream/
 http://winterbe.com/posts/2014/07/31/java8-stream-tutorial-examples/
